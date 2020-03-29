@@ -1,0 +1,37 @@
+.QWidget{
+    background: lightblue;
+    color: darkslategray;
+    border-top-right-radius: 9px;
+    border-bottom-right-radius: 9px;
+}
+/*文本框设置*/
+QPlainTextEdit
+{
+    background: rgb(255,255,236);
+    border-radius: 6px;
+}
+/*滚动器设置*/
+.QScrollBar:vertical
+,.QScrollBar:horizontal{
+    margin:0;
+    padding: 0;
+    background:lightyellow;
+}
+.QScrollBar:vertical{width: 12px;}
+.QScrollBar:horizontal{height: 12px;}
+/*滚动条设置*/
+.QScrollBar::handle:vertical
+,.QScrollBar::handle:horizontal{
+    background:lightblue;
+    border: 1px solid darkcyan;
+    border-radius:6px;  
+}
+.QScrollBar::handle:vertical{ width:12px; min-height:30px;}
+.QScrollBar::handle:horizontal{height: 12px; min-width: 30px;}
+/*滚动条动画设置*/
+.QScrollBar::handle:vertical:hover
+,.QScrollBar::handle:horizontal:hover{
+    background:lightskyblue ;
+    border-radius: 6px;
+}
+

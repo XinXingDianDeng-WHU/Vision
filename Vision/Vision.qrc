@@ -1,0 +1,35 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Resources/icon/About.png</file>
+        <file>Resources/icon/Close.png</file>
+        <file>Resources/icon/Copy.png</file>
+        <file>Resources/icon/Cut.png</file>
+        <file>Resources/icon/New.png</file>
+        <file>Resources/icon/Open.png</file>
+        <file>Resources/icon/Paste.png</file>
+        <file>Resources/icon/Quit.png</file>
+        <file>Resources/icon/Redo.png</file>
+        <file>Resources/icon/Save.png</file>
+        <file>Resources/icon/SaveAll.png</file>
+        <file>Resources/icon/SelectAll.png</file>
+        <file>Resources/icon/Undo.png</file>
+        <file>Resources/icon/SaveAs.png</file>
+        <file>Resources/icon/Attritube.png</file>
+        <file>Resources/icon/getCode.png</file>
+        <file>Resources/icon/Delete.png</file>
+        <file>Resources/icon/class.png</file>
+        <file>Resources/icon/do_while.png</file>
+        <file>Resources/icon/for.png</file>
+        <file>Resources/icon/func.png</file>
+        <file>Resources/icon/if.png</file>
+        <file>Resources/icon/if_else.png</file>
+        <file>Resources/icon/struct.png</file>
+        <file>Resources/icon/switch.png</file>
+        <file>Resources/icon/while.png</file>
+        <file>Resources/qss/completer.qss</file>
+        <file>Resources/qss/global.qss</file>
+        <file>Resources/qss/msgBox.qss</file>
+        <file>Resources/qss/smart.qss</file>
+        <file>Resources/qss/tools.qss</file>
+    </qresource>
+</RCC>

@@ -29,6 +29,8 @@ Vision::Vision(QWidget* parent)
 	, toolKit(new ToolKit(globalSplitter))
 	, plotTab(new QTabWidget(globalSplitter))
 	, editTab(new QTabWidget(globalSplitter))
+	, plots(new QList<PlotPad*>())
+	, edits(new QList<SmartEdit*>())
 {
 	//初始化
 	init();
@@ -88,12 +90,23 @@ void Vision::init() {
 	setCentralWidget(globalSplitter);
 	setMinimumSize(900, 600);
 	//变量初始化
-	PlotPad* pad = new PlotPad();
+	/*PlotPad* pad = new PlotPad();
 	plotTab->addTab(pad, "plotPad");
 	SmartEdit* edit = new SmartEdit();
-	editTab->addTab(edit, "smartEdit");
+	editTab->addTab(edit, "smartEdit");*/
 	//加载qss
 	loadStyleSheet(this, "global.qss");
+	//设置初始菜单栏状态
+	visionUi.actionSave->setEnabled(false);
+	visionUi.actionSaveAll->setEnabled(false);
+	visionUi.actionSaveAs->setEnabled(false);
+	visionUi.actionClose->setEnabled(false);
+	visionUi.actionCopy->setEnabled(false);
+	visionUi.actionCut->setEnabled(false);
+	visionUi.actionDelete->setEnabled(false);
+	visionUi.actionPaste->setEnabled(false);
+	visionUi.actionRedo->setEnabled(false);
+	visionUi.actionUndo->setEnabled(false);
 }
 
 /*时间标签*/
@@ -172,23 +185,104 @@ void Vision::Delete() {
 }
 /*复制代码*/
 void Vision::getCode() {
-
+	edits->at(editTab->currentIndex())->selectAll();
+	edits->at(editTab->currentIndex())->copy();
 }
 /*新建文件*/
 void Vision::New() {
+	QString defaultName = "#untitled@" + QString::number(plotTab->count());
+	PlotPad* newPad = new PlotPad();	
+	plots->append(newPad);
+	plotTab->addTab(newPad, defaultName);
+	plotTab->setCurrentIndex(plotTab->count() - 1);
+	SmartEdit* newEdit = new SmartEdit();
+	edits->append(newEdit);
+	editTab->addTab(newEdit, defaultName);
+	editTab->setCurrentIndex(editTab->count() - 1);
+	filePaths.append("");
 
+	visionUi.actionSave->setEnabled(true);
+	visionUi.actionSaveAll->setEnabled(true);
+	visionUi.actionSaveAs->setEnabled(true);
+	visionUi.actionClose->setEnabled(true);
+	visionUi.actionCopy->setEnabled(true);
+	visionUi.actionCut->setEnabled(true);
+	visionUi.actionDelete->setEnabled(true);
+	visionUi.actionPaste->setEnabled(true);
+	visionUi.actionRedo->setEnabled(true);
+	visionUi.actionUndo->setEnabled(true);
 }
 /*打开文件*/
 void Vision::Open() {
-
+	QString filePath = QFileDialog::getOpenFileName(this,
+		QString::fromLocal8Bit("打开文件"), DEFAULT_PATH, tr("XML (*.xml)"));
+	if (filePath != NULL && !filePaths.contains(filePath, Qt::CaseSensitive)) {
+		//读取文件内容，解析后加载到plotTab和editTab
+	}
+	else if(filePaths.contains(filePath, Qt::CaseSensitive)){
+		//将焦点跳转到相同路径的tab
+		int index = filePaths.indexOf(filePath);
+		plotTab->setCurrentIndex(index);
+		editTab->setCurrentIndex(index);
+	}
+	if (plotTab->count() == 1) {
+		visionUi.actionSave->setEnabled(true);
+		visionUi.actionSaveAll->setEnabled(true);
+		visionUi.actionSaveAs->setEnabled(true);
+		visionUi.actionClose->setEnabled(true);
+		visionUi.actionCopy->setEnabled(true);
+		visionUi.actionCut->setEnabled(true);
+		visionUi.actionDelete->setEnabled(true);
+		visionUi.actionPaste->setEnabled(true);
+		visionUi.actionRedo->setEnabled(true);
+		visionUi.actionUndo->setEnabled(true);
+	}
+	
 }
 /*保存文件*/
 void Vision::Save() {
-
+	//存入txt
+	if (plotTab->count() > 0) {
+		//QRegExp rx("&untitled@\S*");		
+		int index = editTab->currentIndex();
+		QString filePath = filePaths.at(index);
+		if (filePath.isEmpty()) {
+			filePath = QFileDialog::getSaveFileName(this,
+				QString::fromLocal8Bit("保存文件"), DEFAULT_PATH, tr("XML (*.xml)"));
+			filePaths[index] = filePath;
+		}
+		QFile file(filePath);
+		if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+			return;
+		QTextStream out(&file);
+		out.setCodec(QTextCodec::codecForName("utf-8"));
+		QString text = edits->at(index)->toPlainText();
+		out << text;
+		file.close();
+		visionUi.statusBar->showMessage(QString::fromLocal8Bit("成功保存至") + filePath, 3000);		
+	}	
 }
 /*保存全部*/
 void Vision::SaveAll() {
-
+	if (plotTab->count()>0) {
+		int fileCounts = filePaths.count();
+		for (int i = 0; i < fileCounts; i++) {
+			if (filePaths.at(i).isEmpty()) {
+				QString label = editTab->tabText(i);
+				QString filePath = QFileDialog::getSaveFileName(this,
+					QString::fromLocal8Bit("保存") + label, DEFAULT_PATH, tr("XML (*.xml)"));
+				filePaths[i] = filePath;
+			}
+			QFile file(filePaths.at(i));			
+			if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+				return;
+			QTextStream out(&file);
+			out.setCodec(QTextCodec::codecForName("utf-8"));
+			out << edits->at(i)->toPlainText();
+			file.close();
+		}
+		visionUi.statusBar->showMessage(QString::fromLocal8Bit("全部保存成功"), 3000);
+	}
 }
 /*导出，另存为*/
 void Vision::SaveAs() {
@@ -196,7 +290,47 @@ void Vision::SaveAs() {
 }
 /*关闭文件*/
 void Vision::Close() {
-
+	if (plotTab->count() > 0) {
+		int index = editTab->currentIndex();
+		QString filePath = filePaths.at(index);
+		QFile file(filePath);
+		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return;
+		QTextStream in(&file);
+		in.setCodec(QTextCodec::codecForName("utf-8"));
+		QString all = in.readAll();
+		file.close();
+		QString text = edits->at(index)->toPlainText();
+		if (QString::compare(all, text) != 0) {
+			QMessageBox* msgBox = new QMessageBox(
+				QMessageBox::Question
+				, QString::fromLocal8Bit("关闭")
+				, QString::fromLocal8Bit("是否保存当前文件？")
+				, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+			msgBox->button(QMessageBox::Yes)->setText(QString::fromLocal8Bit("保存退出"));
+			msgBox->button(QMessageBox::No)->setText(QString::fromLocal8Bit("直接退出"));
+			msgBox->button(QMessageBox::Cancel)->setText(QString::fromLocal8Bit("取消"));
+			int choose = msgBox->exec();
+			if (QMessageBox::Yes == choose)
+				Save();
+			if (QMessageBox::Cancel == choose)
+				return;
+		}
+		filePaths.removeAt(index);
+		plots->removeAt(index);
+		edits->removeAt(index);	
+		if (plots->count() == 0) {
+			visionUi.actionSave->setEnabled(false);
+			visionUi.actionSaveAll->setEnabled(false);
+			visionUi.actionSaveAs->setEnabled(false);
+			visionUi.actionClose->setEnabled(false);
+			visionUi.actionCopy->setEnabled(false);
+			visionUi.actionCut->setEnabled(false);
+			visionUi.actionDelete->setEnabled(false);
+			visionUi.actionPaste->setEnabled(false);
+			visionUi.actionRedo->setEnabled(false);
+			visionUi.actionUndo->setEnabled(false);
+		}
+	}
 }
 
 

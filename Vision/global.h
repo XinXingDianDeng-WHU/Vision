@@ -58,3 +58,5 @@ const QStringList undefined = {
 };
 /*╪стьQSS*/
 void  loadStyleSheet(QWidget* ptr, QString fullFileName);
+//д╛хоб╥╬╤
+#define DEFAULT_PATH ".//product"

@@ -261,6 +261,7 @@ void Vision::Save() {
 		file.close();
 		visionUi.statusBar->showMessage(QString::fromLocal8Bit("成功保存至") + filePath, 3000);		
 	}	
+	//存XML
 }
 /*保存全部*/
 void Vision::SaveAll() {

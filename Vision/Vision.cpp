@@ -4,31 +4,33 @@
 #include "PlotPad.h"
 #include "SmartEdit.h"
 /*
-neighbour version means one of last few versions or current version
-,for example versions 1.0, 1.01, 1.02 are regarded as neighbours
-,if current version is 1.02
-,so as neighbour version can be 1.0, 1.01 or 1.02 
+neighbour version means one of several lastest versions
+for example, versions 1.0, 1.01, 1.02 are regarded as neighbour group, if current version is 1.02
+,so as neighbour version can be 1.0 or 1.01 or 1.02
 
 neighbour@
-version 1.33 forward to 1.4 (no.6,7 to be fixed
-1.project crash ocurrs;
-2.CPU occupied 15%-18% on i7Core, caused by improper operation(rowContentPlot->update in an over high frequency func) in paintEvent, 
-  solved by place it to a lower frequency func, result in just no more than 3%;
-3.fixed bug that func supplement "Type" insert wrong place;
-4.optimize func smartDrop() & smartComplete();
-5.add const QString:version;
-6.annotation highlight in green;
-7.highlightblock displayed improper when a string contains repeat keys;
+version 1.56
+1.define DEFAULT_PATH ".//product" for universal use;
+2.add QList plots & edits for temp;
+3.icon buttons' enable-logic basically figured;
+4.funcs getCode(), New(), Open(), Save(), SaveAll(), Close() building;
+5.key smart fixed, "func" lost "()" in its smart;
+6.highlight block repeat-key cases can be shown more properly;
+
+*.escape character not supported;
+*.support two patterns, you can choose to show plotpad or not;
+*.support two languages, you can choose C++ or Java;
 */
-const QString version = "1.4";
+const QString version = "1.56";
+
 Vision::Vision(QWidget* parent)
 	: QMainWindow(parent)
-	, timer(new QTimer(this))
-	, curDateTimeLabel(new QLabel())
 	, globalSplitter(new QSplitter(Qt::Horizontal, this))
 	, toolKit(new ToolKit(globalSplitter))
 	, plotTab(new QTabWidget(globalSplitter))
 	, editTab(new QTabWidget(globalSplitter))
+	, curDateTimeLabel(new QLabel())
+	, timer(new QTimer(this))
 	, plots(new QList<PlotPad*>())
 	, edits(new QList<SmartEdit*>())
 {
@@ -36,6 +38,8 @@ Vision::Vision(QWidget* parent)
 	init();
 	//启动计时器
 	timer->start(1000);
+	showCurDateTime();
+	statusBar()->showMessage("initailizition finished!", 5000);
 	//槽函数
 	connect(timer, SIGNAL(timeout()), this, SLOT(showCurDateTime()));
 	connect(visionUi.actionUndo, SIGNAL(triggered()), this, SLOT(Undo()));
@@ -54,6 +58,11 @@ Vision::Vision(QWidget* parent)
 	connect(visionUi.actionClose, SIGNAL(triggered()), this, SLOT(Close()));
 	connect(visionUi.actionQuit, SIGNAL(triggered()), this, SLOT(Quit()));
 	connect(visionUi.actionAbout, SIGNAL(triggered()), this, SLOT(About()));
+	connect(visionUi.actionDefault, SIGNAL(triggered()), this, SLOT(Default()));
+	connect(visionUi.actionNoPlot, SIGNAL(triggered()), this, SLOT(NoPlot()));
+	connect(visionUi.actionAbout, SIGNAL(triggered()), this, SLOT(Cpp()));
+	connect(visionUi.actionJava, SIGNAL(triggered()), this, SLOT(Java()));
+
 
 }
 Vision::~Vision() {
@@ -68,12 +77,24 @@ Vision::~Vision() {
 }
 /*初始化*/
 void Vision::init() {
+	//全局窗口
+	setMinimumSize(900, 600);
 	visionUi.setupUi(this);//ui定义上区：菜单栏和工具栏
+
 	//自定义中间区：工具框、图形区、代码框
 	toolKit->setMinimumWidth(60);
 	toolKit->setMaximumWidth(200);
 	plotTab->setMinimumWidth(200);
 	editTab->setMinimumWidth(200);
+	//自定义下区：状态栏、时间标签
+	curDateTimeLabel->setAlignment(Qt::AlignRight);
+	statusBar()->addPermanentWidget(curDateTimeLabel);
+	//变量初始化
+	/*PlotPad* pad = new PlotPad();
+	plotTab->addTab(pad, "plotPad");
+	SmartEdit* edit = new SmartEdit();
+	editTab->addTab(edit, "smartEdit");*/
+
 	/*
 	(index, stretch) 分割器内第index号框内元素stretch 0则不随窗体变化，1+则为比例系数
 	例如以下1号元素与2号元素宽度比为3：1
@@ -81,32 +102,9 @@ void Vision::init() {
 	for (int i = 0; i < 3; i++) {
 		globalSplitter->setStretchFactor(i, 1);
 	}
-	//自定义下区：状态栏、时间标签
-	statusBar()->showMessage("initailizition finished!", 5000);
-	curDateTimeLabel->setAlignment(Qt::AlignRight);
-	statusBar()->addPermanentWidget(curDateTimeLabel);
-	showCurDateTime();
-	//全局窗口
-	setCentralWidget(globalSplitter);
-	setMinimumSize(900, 600);
-	//变量初始化
-	/*PlotPad* pad = new PlotPad();
-	plotTab->addTab(pad, "plotPad");
-	SmartEdit* edit = new SmartEdit();
-	editTab->addTab(edit, "smartEdit");*/
+	setCentralWidget(globalSplitter);//放在布局最后
 	//加载qss
 	loadStyleSheet(this, "global.qss");
-	//设置初始菜单栏状态
-	visionUi.actionSave->setEnabled(false);
-	visionUi.actionSaveAll->setEnabled(false);
-	visionUi.actionSaveAs->setEnabled(false);
-	visionUi.actionClose->setEnabled(false);
-	visionUi.actionCopy->setEnabled(false);
-	visionUi.actionCut->setEnabled(false);
-	visionUi.actionDelete->setEnabled(false);
-	visionUi.actionPaste->setEnabled(false);
-	visionUi.actionRedo->setEnabled(false);
-	visionUi.actionUndo->setEnabled(false);
 }
 
 /*时间标签*/
@@ -141,6 +139,22 @@ int Vision::Quit() {
 void Vision::closeEvent(QCloseEvent* event) {
 	if (QMessageBox::Cancel == Quit())event->ignore();
 }
+/*默认模式*/
+void Vision::Default() {
+	globalSplitter->widget(1)->show();
+}
+/*无图模式*/
+void Vision::NoPlot() {
+	globalSplitter->widget(1)->close();
+}
+/*C++*/
+void Vision::Cpp() {
+
+}
+/*Java*/
+void Vision::Java() {
+
+}
 /*关于*/
 void Vision::About() {
 	QMessageBox* msgBox = new QMessageBox(
@@ -169,7 +183,7 @@ void Vision::Cut() {
 }
 /*复制*/
 void Vision::Copy() {
-
+	
 }
 /*粘贴*/
 void Vision::Paste() {
@@ -183,7 +197,7 @@ void Vision::SelectAll() {
 void Vision::Delete() {
 
 }
-/*复制代码*/
+/*取码*/
 void Vision::getCode() {
 	edits->at(editTab->currentIndex())->selectAll();
 	edits->at(editTab->currentIndex())->copy();
@@ -191,7 +205,7 @@ void Vision::getCode() {
 /*新建文件*/
 void Vision::New() {
 	QString defaultName = "#untitled@" + QString::number(plotTab->count());
-	PlotPad* newPad = new PlotPad();	
+	PlotPad* newPad = new PlotPad();
 	plots->append(newPad);
 	plotTab->addTab(newPad, defaultName);
 	plotTab->setCurrentIndex(plotTab->count() - 1);
@@ -219,7 +233,7 @@ void Vision::Open() {
 	if (filePath != NULL && !filePaths.contains(filePath, Qt::CaseSensitive)) {
 		//读取文件内容，解析后加载到plotTab和editTab
 	}
-	else if(filePaths.contains(filePath, Qt::CaseSensitive)){
+	else if (filePaths.contains(filePath, Qt::CaseSensitive)) {
 		//将焦点跳转到相同路径的tab
 		int index = filePaths.indexOf(filePath);
 		plotTab->setCurrentIndex(index);
@@ -237,7 +251,6 @@ void Vision::Open() {
 		visionUi.actionRedo->setEnabled(true);
 		visionUi.actionUndo->setEnabled(true);
 	}
-	
 }
 /*保存文件*/
 void Vision::Save() {
@@ -259,13 +272,13 @@ void Vision::Save() {
 		QString text = edits->at(index)->toPlainText();
 		out << text;
 		file.close();
-		visionUi.statusBar->showMessage(QString::fromLocal8Bit("成功保存至") + filePath, 3000);		
-	}	
+		visionUi.statusBar->showMessage(QString::fromLocal8Bit("成功保存至") + filePath, 3000);
+	}
 	//存XML
 }
 /*保存全部*/
 void Vision::SaveAll() {
-	if (plotTab->count()>0) {
+	if (plotTab->count() > 0) {
 		int fileCounts = filePaths.count();
 		for (int i = 0; i < fileCounts; i++) {
 			if (filePaths.at(i).isEmpty()) {
@@ -274,7 +287,7 @@ void Vision::SaveAll() {
 					QString::fromLocal8Bit("保存") + label, DEFAULT_PATH, tr("XML (*.xml)"));
 				filePaths[i] = filePath;
 			}
-			QFile file(filePaths.at(i));			
+			QFile file(filePaths.at(i));
 			if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
 				return;
 			QTextStream out(&file);
@@ -318,7 +331,7 @@ void Vision::Close() {
 		}
 		filePaths.removeAt(index);
 		plots->removeAt(index);
-		edits->removeAt(index);	
+		edits->removeAt(index);
 		if (plots->count() == 0) {
 			visionUi.actionSave->setEnabled(false);
 			visionUi.actionSaveAll->setEnabled(false);

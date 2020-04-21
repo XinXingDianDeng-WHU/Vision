@@ -117,8 +117,40 @@
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuSetting">
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+     </font>
+    </property>
+    <property name="title">
+     <string>设置</string>
+    </property>
+    <widget class="QMenu" name="menuPlotPattern">
+     <property name="font">
+      <font>
+       <family>微软雅黑</family>
+      </font>
+     </property>
+     <property name="title">
+      <string>模式</string>
+     </property>
+     <addaction name="actionDefault"/>
+     <addaction name="actionNoPlot"/>
+    </widget>
+    <widget class="QMenu" name="menuLanguage">
+     <property name="title">
+      <string>语言</string>
+     </property>
+     <addaction name="actionCpp"/>
+     <addaction name="actionJava"/>
+    </widget>
+    <addaction name="menuPlotPattern"/>
+    <addaction name="menuLanguage"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuSetting"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
@@ -201,6 +233,9 @@
    </property>
   </action>
   <action name="actionSave">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="Save" resource="Vision.qrc">
      <normaloff>:/Resources/icon/Save.png</normaloff>:/Resources/icon/Save.png</iconset>
@@ -222,6 +257,9 @@
    </property>
   </action>
   <action name="actionSaveAll">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="SaveAll" resource="Vision.qrc">
      <normaloff>:/Resources/icon/SaveAll.png</normaloff>:/Resources/icon/SaveAll.png</iconset>
@@ -240,6 +278,9 @@
    </property>
   </action>
   <action name="actionSaveAs">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="SaveAs" resource="Vision.qrc">
      <normaloff>:/Resources/icon/SaveAs.png</normaloff>:/Resources/icon/SaveAs.png</iconset>
@@ -258,6 +299,9 @@
    </property>
   </action>
   <action name="actionClose">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="Close" resource="Vision.qrc">
      <normaloff>:/Resources/icon/Close.png</normaloff>:/Resources/icon/Close.png</iconset>
@@ -294,6 +338,9 @@
    </property>
   </action>
   <action name="actionUndo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="Undo" resource="Vision.qrc">
      <normaloff>:/Resources/icon/Undo.png</normaloff>:/Resources/icon/Undo.png</iconset>
@@ -312,6 +359,9 @@
    </property>
   </action>
   <action name="actionRedo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="Redo" resource="Vision.qrc">
      <normaloff>:/Resources/icon/Redo.png</normaloff>:/Resources/icon/Redo.png</iconset>
@@ -330,6 +380,9 @@
    </property>
   </action>
   <action name="actionCopy">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="Copy" resource="Vision.qrc">
      <normaloff>:/Resources/icon/Copy.png</normaloff>:/Resources/icon/Copy.png</iconset>
@@ -348,6 +401,9 @@
    </property>
   </action>
   <action name="actionPaste">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="Paste" resource="Vision.qrc">
      <normaloff>:/Resources/icon/Paste.png</normaloff>:/Resources/icon/Paste.png</iconset>
@@ -366,6 +422,9 @@
    </property>
   </action>
   <action name="actionCut">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="Cut" resource="Vision.qrc">
      <normaloff>:/Resources/icon/Cut.png</normaloff>:/Resources/icon/Cut.png</iconset>
@@ -459,6 +518,9 @@
    </property>
   </action>
   <action name="actionDelete">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="Delete" resource="Vision.qrc">
      <normaloff>:/Resources/icon/Delete.png</normaloff>:/Resources/icon/Delete.png</iconset>
@@ -474,6 +536,78 @@
    </property>
    <property name="shortcut">
     <string>Del</string>
+   </property>
+  </action>
+  <action name="actionDefault">
+   <property name="icon">
+    <iconset theme="Default">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>默认</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+  </action>
+  <action name="actionNoPlot">
+   <property name="icon">
+    <iconset theme="NoPlot">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>无图</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
+   </property>
+  </action>
+  <action name="actionCpp">
+   <property name="icon">
+    <iconset theme="C++">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>C++</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+1</string>
+   </property>
+  </action>
+  <action name="actionJava">
+   <property name="icon">
+    <iconset theme="Java">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Java</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+2</string>
    </property>
   </action>
  </widget>

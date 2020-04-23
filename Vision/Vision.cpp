@@ -9,19 +9,15 @@ for example, versions 1.0, 1.01, 1.02 are regarded as neighbour group, if curren
 ,so as neighbour version can be 1.0 or 1.01 or 1.02
 
 neighbour@
-version 1.56
-1.define DEFAULT_PATH ".//product" for universal use;
-2.add QList plots & edits for temp;
-3.icon buttons' enable-logic basically figured;
-4.funcs getCode(), New(), Open(), Save(), SaveAll(), Close() building;
-5.key smart fixed, "func" lost "()" in its smart;
-6.highlight block repeat-key cases can be shown more properly;
+version 2.17
+1.add lit case nodeStart, nodeEnd, this is for node confirming;
+2.fix several highlightBlock cases, very hard problem;
 
 *.escape character not supported;
 *.support two patterns, you can choose to show plotpad or not;
 *.support two languages, you can choose C++ or Java;
 */
-const QString version = "1.56";
+const QString version = "2.17";
 
 Vision::Vision(QWidget* parent)
 	: QMainWindow(parent)
@@ -34,12 +30,31 @@ Vision::Vision(QWidget* parent)
 	, plots(new QList<PlotPad*>())
 	, edits(new QList<SmartEdit*>())
 {
-	//初始化
-	init();
+	//全局窗口
+	setMinimumSize(900, 600);
+	visionUi.setupUi(this);//ui定义上区：菜单栏和工具栏
+	//自定义中间区：工具框、图形区、代码框
+	toolKit->setMinimumWidth(60);
+	toolKit->setMaximumWidth(200);
+	plotTab->setMinimumWidth(200);
+	editTab->setMinimumWidth(200);
+	//自定义下区：状态栏、时间标签
+	curDateTimeLabel->setAlignment(Qt::AlignRight);
+	statusBar()->addPermanentWidget(curDateTimeLabel);
+	/*
+	(index, stretch) 分割器内第index号框内元素stretch 0则不随窗体变化，1+则为比例系数
+	例如以下1号元素与2号元素宽度比为3：1
+	*/
+	for (int i = 0; i < 3; i++) {
+		globalSplitter->setStretchFactor(i, 1);
+	}
+	setCentralWidget(globalSplitter);//放在布局最后
+	//加载qss
+	loadStyleSheet(this, "global.qss");
 	//启动计时器
-	timer->start(1000);
+	timer->start(100);
 	showCurDateTime();
-	statusBar()->showMessage("initailizition finished!", 5000);
+	statusBar()->showMessage(QString::fromLocal8Bit("Vision为您服务"), 5000);
 	//槽函数
 	connect(timer, SIGNAL(timeout()), this, SLOT(showCurDateTime()));
 	connect(visionUi.actionUndo, SIGNAL(triggered()), this, SLOT(Undo()));
@@ -62,49 +77,21 @@ Vision::Vision(QWidget* parent)
 	connect(visionUi.actionNoPlot, SIGNAL(triggered()), this, SLOT(NoPlot()));
 	connect(visionUi.actionAbout, SIGNAL(triggered()), this, SLOT(Cpp()));
 	connect(visionUi.actionJava, SIGNAL(triggered()), this, SLOT(Java()));
-
-
+	connect(plotTab, SIGNAL(currentChanged(int)), this, SLOT(TabSyn_EditFollowPad(int)));
+	connect(editTab, SIGNAL(currentChanged(int)), this, SLOT(TabSyn_PadFollowEdit(int)));
 }
 Vision::~Vision() {
 	timer->stop();	delete timer; timer = Q_NULLPTR;
 	delete curDateTimeLabel;	curDateTimeLabel = Q_NULLPTR;
 	delete toolKit;	toolKit = Q_NULLPTR;
-	if (plotTab->count() > 0)plotTab->clear();
+	while (plotTab->count() > 0) {
+		int lastIndex = plotTab->count() - 1;
+		plotTab->removeTab(lastIndex);
+		editTab->removeTab(lastIndex);
+	}
 	delete plotTab;	plotTab = Q_NULLPTR;
-	if (editTab->count() > 0)editTab->clear();
 	delete editTab;	editTab = Q_NULLPTR;
 	delete globalSplitter; globalSplitter = Q_NULLPTR;
-}
-/*初始化*/
-void Vision::init() {
-	//全局窗口
-	setMinimumSize(900, 600);
-	visionUi.setupUi(this);//ui定义上区：菜单栏和工具栏
-
-	//自定义中间区：工具框、图形区、代码框
-	toolKit->setMinimumWidth(60);
-	toolKit->setMaximumWidth(200);
-	plotTab->setMinimumWidth(200);
-	editTab->setMinimumWidth(200);
-	//自定义下区：状态栏、时间标签
-	curDateTimeLabel->setAlignment(Qt::AlignRight);
-	statusBar()->addPermanentWidget(curDateTimeLabel);
-	//变量初始化
-	/*PlotPad* pad = new PlotPad();
-	plotTab->addTab(pad, "plotPad");
-	SmartEdit* edit = new SmartEdit();
-	editTab->addTab(edit, "smartEdit");*/
-
-	/*
-	(index, stretch) 分割器内第index号框内元素stretch 0则不随窗体变化，1+则为比例系数
-	例如以下1号元素与2号元素宽度比为3：1
-	*/
-	for (int i = 0; i < 3; i++) {
-		globalSplitter->setStretchFactor(i, 1);
-	}
-	setCentralWidget(globalSplitter);//放在布局最后
-	//加载qss
-	loadStyleSheet(this, "global.qss");
 }
 
 /*时间标签*/
@@ -141,11 +128,15 @@ void Vision::closeEvent(QCloseEvent* event) {
 }
 /*默认模式*/
 void Vision::Default() {
-	globalSplitter->widget(1)->show();
+	if (plotTab->count() > 0) {
+
+	}
 }
 /*无图模式*/
 void Vision::NoPlot() {
-	globalSplitter->widget(1)->close();
+	if (editTab->count() > 0) {
+
+	}
 }
 /*C++*/
 void Vision::Cpp() {
@@ -204,17 +195,20 @@ void Vision::getCode() {
 }
 /*新建文件*/
 void Vision::New() {
-	QString defaultName = "#untitled@" + QString::number(plotTab->count());
-	PlotPad* newPad = new PlotPad();
+	QString defaultName = "#untitled@" + QString::number(plotTab->count()); 
+	QGraphicsScene* scene = new QGraphicsScene();
+	PlotPad* newPad = new PlotPad(scene);
 	plots->append(newPad);
 	plotTab->addTab(newPad, defaultName);
-	plotTab->setCurrentIndex(plotTab->count() - 1);
+	int newIndex = plotTab->count() - 1;
+	plotTab->setCurrentIndex(newIndex);
 	SmartEdit* newEdit = new SmartEdit();
 	edits->append(newEdit);
 	editTab->addTab(newEdit, defaultName);
-	editTab->setCurrentIndex(editTab->count() - 1);
+	editTab->setCurrentIndex(newIndex);
+	newPad->edit = newEdit;
 	filePaths.append("");
-
+	
 	visionUi.actionSave->setEnabled(true);
 	visionUi.actionSaveAll->setEnabled(true);
 	visionUi.actionSaveAs->setEnabled(true);
@@ -346,10 +340,14 @@ void Vision::Close() {
 		}
 	}
 }
-
-
-
-
-
-
-
+/*edit和plot绑定*/
+void Vision::TabSyn_EditFollowPad(int index) {
+	if (index >= 0) {
+		editTab->setCurrentIndex(index);
+	}
+}
+void Vision::TabSyn_PadFollowEdit(int index) {
+	if (index >= 0) {
+		plotTab->setCurrentIndex(index);
+	}
+}

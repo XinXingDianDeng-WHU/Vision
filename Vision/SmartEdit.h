@@ -1,6 +1,6 @@
 #include <QtWidgets>
 #include <QByteArray>
-
+class PlotPad;
 /*
 高亮器;
 必须写在SmartEdit前
@@ -10,9 +10,9 @@ class SyntaxLit : public QSyntaxHighlighter {
 public:
 	SyntaxLit(QTextDocument* document = Q_NULLPTR);
 protected:	void highlightBlock(const QString& rowText);
-private:		
+private:	
 	QList<QRegularExpression>lits;// lit_blue, lit_purple, lit_quotes, lit_sigCmt;
-	QRegExp lit_mulCmtStart, lit_mulCmtEnd;
+	QRegExp lit_sigCmt, lit_mulCmtStart, lit_mulCmtEnd, lit_nodeStart, lit_nodeEnd;
 };
 
 class SmartEdit: public QPlainTextEdit {
@@ -20,10 +20,10 @@ class SmartEdit: public QPlainTextEdit {
 public:
 	SmartEdit(QTabWidget* parent = Q_NULLPTR);
 	~SmartEdit();
-	void init();
-	//以下两个函数公有，因为Class RowNumArea需要
+
 	int getRowNumWidth();//行号块宽
 	void rowNumPlot(QPaintEvent* event);//行号区绘画
+	QString smartCore(QString key);
 
 protected:
 	void resizeEvent(QResizeEvent* event)override;
@@ -41,8 +41,7 @@ private:
 	SyntaxLit* syntaxLit;
 	/*函数*/
 	QString getPrefix() const;
-	void smartCore(QString key);
-	
+
 private slots:
 	void rowContentPlot();//单行文本块绘画
 	void smartComplete(const QString& key);//智能补全关键字

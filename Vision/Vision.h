@@ -7,12 +7,14 @@ namespace Ui {
 class ToolKit;
 class PlotPad;
 class SmartEdit;
+class TipLabel;
 class Vision : public QMainWindow
 {
 	Q_OBJECT
 
 public:
 	QLabel* curDateTimeLabel;
+	TipLabel* curNodePathLabel;
 	Vision(QWidget *parent = Q_NULLPTR);
 	~Vision();
 

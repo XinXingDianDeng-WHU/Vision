@@ -9,16 +9,21 @@ for example, versions 1.0, 1.01, 1.02 are regarded as neighbour group, if curren
 ,so as neighbour version can be 1.0 or 1.01 or 1.02
 
 neighbour@
-version 2.17
-1.add lit case nodeStart, nodeEnd, this is for node confirming;
-2.fix several highlightBlock cases, very hard problem;
+version 3.08
+1.edit text will follow mousePressEvent on pad;
+2.move class TipLabel from Vision.h .cpp to PlotPad.h .cpp;
+3.TipLabel now support ToolTip;
+4.PlotPad init with QSS;
+5.modify parameters in func paint of Block;
+6.remove func getRoot() in PlotPad;
 
 *.escape character not supported;
 *.support two patterns, you can choose to show plotpad or not;
 *.support two languages, you can choose C++ or Java;
 */
-const QString version = "2.17";
+const QString version = "3.08";
 
+/*Vision*/
 Vision::Vision(QWidget* parent)
 	: QMainWindow(parent)
 	, globalSplitter(new QSplitter(Qt::Horizontal, this))
@@ -26,6 +31,7 @@ Vision::Vision(QWidget* parent)
 	, plotTab(new QTabWidget(globalSplitter))
 	, editTab(new QTabWidget(globalSplitter))
 	, curDateTimeLabel(new QLabel())
+	, curNodePathLabel(new TipLabel())
 	, timer(new QTimer(this))
 	, plots(new QList<PlotPad*>())
 	, edits(new QList<SmartEdit*>())
@@ -38,8 +44,8 @@ Vision::Vision(QWidget* parent)
 	toolKit->setMaximumWidth(200);
 	plotTab->setMinimumWidth(200);
 	editTab->setMinimumWidth(200);
-	//自定义下区：状态栏、时间标签
-	curDateTimeLabel->setAlignment(Qt::AlignRight);
+	//自定义下区：状态栏、时间标签、节点路径标签
+	statusBar()->addPermanentWidget(curNodePathLabel);
 	statusBar()->addPermanentWidget(curDateTimeLabel);
 	/*
 	(index, stretch) 分割器内第index号框内元素stretch 0则不随窗体变化，1+则为比例系数
@@ -83,6 +89,7 @@ Vision::Vision(QWidget* parent)
 Vision::~Vision() {
 	timer->stop();	delete timer; timer = Q_NULLPTR;
 	delete curDateTimeLabel;	curDateTimeLabel = Q_NULLPTR;
+	delete curNodePathLabel; curNodePathLabel = Q_NULLPTR;
 	delete toolKit;	toolKit = Q_NULLPTR;
 	while (plotTab->count() > 0) {
 		int lastIndex = plotTab->count() - 1;
@@ -122,7 +129,7 @@ int Vision::Quit() {
 	}
 	return choose;
 }
-/*窗口按钮退出*/
+/*关闭事件-窗口按钮退出*/
 void Vision::closeEvent(QCloseEvent* event) {
 	if (QMessageBox::Cancel == Quit())event->ignore();
 }
@@ -162,7 +169,7 @@ void Vision::About() {
 }
 /*撤回*/
 void Vision::Undo() {
-
+	plots->at(plotTab->currentIndex())->backLevel();
 }
 /*重做*/
 void Vision::Redo() {
@@ -186,7 +193,7 @@ void Vision::SelectAll() {
 }
 /*删除*/
 void Vision::Delete() {
-
+	plots->at(plotTab->currentIndex())->deleteItem();
 }
 /*取码*/
 void Vision::getCode() {
@@ -207,6 +214,8 @@ void Vision::New() {
 	editTab->addTab(newEdit, defaultName);
 	editTab->setCurrentIndex(newIndex);
 	newPad->edit = newEdit;
+	newPad->pathLabel = curNodePathLabel;
+	curNodePathLabel->setElidedText(newPad->getNodesPath());
 	filePaths.append("");
 	
 	visionUi.actionSave->setEnabled(true);

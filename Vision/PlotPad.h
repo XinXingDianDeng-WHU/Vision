@@ -1,80 +1,101 @@
 #include <QtCore>
+#include <QtWidgets>
 #include <QGraphicsItem>
 #include <QGraphicsScene>
 #include <QGraphicsView>
 class SmartEdit;
-
 class ArrowLine;
-class Item :public QGraphicsItem {
+class Item : public QGraphicsItem{
 public:    virtual QString className() = 0;
 };
-class Block :public Item {
+
+class TipLabel :public QLabel {
+    Q_OBJECT
 public:
-    Block(int x, int y, QString type);
+    explicit TipLabel();
+    void setElidedText(QString fullText);
+private:
+    void enterEvent(QEvent* event);
+    void leaveEvent(QEvent* event);
+};
+
+class Block :public Item{
+public:
+    Block(int x, int y, QString str);
     //~Block();
-    int x, y;
-    QString type;
+    int x, y, w, h;
+    QString head;
     QString content;
-    Block* nextBlock;
-    ArrowLine* outArrow, * inArrow;
+    ArrowLine* inArrow, * outArrow;
+    Block* childRoot;
+    QList<Block*>* childrenBlock;
+
     QString className()override;
     QRectF boundingRect() const override;
-    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+    void removeItemAllSons(Block* pItem);
 protected:
     //键盘事件
     /*void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;*/
     //鼠标事件
     void mouseMoveEvent(QGraphicsSceneMouseEvent* event)override;
-    //void mousePressEvent(QGraphicsSceneMouseEvent* event)override;
-    /*void mouseReleaseEvent(QGraphicsSceneMouseEvent* event)override;*/
+    //void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
+    /*void mousePressEvent(QGraphicsSceneMouseEvent* event)override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent* event)override;*/
 private:
-    bool ctrlPressed = false;
-    void drawToItem(QPainter* painter);
-
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 };
 
-class ArrowLine : public Item,public QObject {
+class ArrowLine : public Item{
     //Q_OBJECT
 public:
     ArrowLine(Block* sourceItem, Block* destItem, QPointF, QPointF);
     //~ArrowLine();
-    void adjust();
+    Block* fromBlock, * toBlock;
+
     QString className()override;
-    Block* getSrc();
-    Block* getDest();
+    void adjust();
+    void deleteArrowLine(ArrowLine* pEdge);
 protected:
     QRectF boundingRect() const override;
+    QPainterPath shape() const override;
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
-    //void contextMenuEvent(QGraphicsSceneContextMenuEvent* event);
+
 private:
-    Block* source, * dest;
-    QPointF sourcePoint;
-    QPointF destPoint;
+    QPointF sourcePoint, destPoint
+        //偏移量,
+        , m_pointStart, m_pointEnd;
+
     qreal arrowSize;
     bool m_pointFlag;
-
-    QPointF m_pointStart;//偏移量
-    QPointF m_pointEnd;
-
+    static qreal min(qreal r1, qreal r2);
+    static qreal abs(qreal r);
 };
 
 class PlotPad :public QGraphicsView
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-    PlotPad(QGraphicsScene* scene);//此处注意QGraphicsView的scene参数是子对象，第二个参数是父对象，如果只有QGraphicsScene参数，则父对象为空
-    //~PlotPad();
+    PlotPad(QGraphicsScene* scene);
+
     //鼠标释放时，绘制图像
     QGraphicsScene* scene;
     SmartEdit* edit;
-    void drawItems(Block* it);
+    TipLabel* pathLabel;
+    Block* root;
+    QStack<QList<Block*>*> s;//s 顶部的QList里面存的应当是当前层显示出来的Items的列表
+    QStringList nodesOnPath;
 
+    void drawItems(Block* it);
+    void backLevel();
+    void deleteItem();
+    QString getNodesPath();
 protected:
-	void dropEvent(QDropEvent* event)override;
-	void dragEnterEvent(QDragEnterEvent* event)override;
-	void dragMoveEvent(QDragMoveEvent* event)override;
+    void dropEvent(QDropEvent* event)override;
+    void dragEnterEvent(QDragEnterEvent* event)override;
+    void dragMoveEvent(QDragMoveEvent* event)override;
+
     //键盘事件
     void keyPressEvent(QKeyEvent* e) override;
     void keyReleaseEvent(QKeyEvent* e) override;
@@ -82,12 +103,12 @@ protected:
     void mouseMoveEvent(QMouseEvent* e)override;
     void mousePressEvent(QMouseEvent* e)override;
     void mouseReleaseEvent(QMouseEvent* e)override;
+    void mouseDoubleClickEvent(QMouseEvent* e)override;
+
     //绘图事件
     void paintEvent(QPaintEvent* e) override;
-
 private:
-    bool ctrlPressed = false;
-    bool m_leftBtnPressed = false;
+    bool ctrlPressed, leftBtnPressed;
     QPoint startPoint, endPoint;
     QGraphicsItem* lastLine ;
 

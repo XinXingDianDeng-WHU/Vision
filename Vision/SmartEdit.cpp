@@ -308,7 +308,10 @@ void SmartEdit::rowContentPlot(/*int*/) {
 	setViewportMargins(getRowNumWidth() - 3, -1, -3, 0);
 	curTextCursor = textCursor();
 	/*  节点内容识别函数  */
-
+	/*if(!getNodeContent().isEmpty())
+		qDebug()<< getNodeContent().at(0);*/
+	//qDebug() << getChildNodeContent();
+	//getParentNodeContent();
 	//当前行高亮
 	if (!isReadOnly()) {
 		QList<QTextEdit::ExtraSelection> extraSelections;
@@ -321,8 +324,81 @@ void SmartEdit::rowContentPlot(/*int*/) {
 		setExtraSelections(extraSelections);
 	}
 }
-/*  节点内容识别函数  */
 
+/*返回父节点的内容，其中子节点内容只保留id*/
+QString SmartEdit::getParentNodeContent()
+{
+	QString str = this->toPlainText();
+	QStringList childContents = getChildNodeContent();
+	int num = childContents.count();
+	for (int i = 0; i < num; i++) {
+		str.replace("<@" + childContents[i] + "@>", "");
+	}
+	//this->setPlainText(str);
+	return str;
+}
+
+/*  扫描代码并返回所有子节点内容  */
+QStringList SmartEdit::getChildNodeContent()
+{
+	QStringList nodesContents;
+	QString content = this->toPlainText();
+	QString str;
+	if (!content.isEmpty()) {
+		QStringList splist1 = content.split("#");	//第一次按#分割,1-max元素必为子节点内容+非子节点内容
+		int count1 = splist1.count();
+		if (count1 > 1) {
+			QStringList splist2;
+			QStringList splist3;
+			QRegExp rx("\\d+");
+			for (int i = 1; i < count1; i++) {
+				splist2 = splist1.at(i).split("<@");	//第二次按<@分割，理想为0元素是id，1元素是子节点内容
+				int count2 = splist2.count();
+				if (count2 == 1) {
+					nodesContents.append("BROKEN!");	//只有一个元素说明用户删除了标头<@，节点被破坏
+					continue;
+				}
+				else if(count2 > 2) {	//有多个标头
+					if (rx.exactMatch(splist2.at(0))) {		//只有第0个元素即#和第一个<@之间是数字节点才有可能保持不被破坏
+						str = splist2.at(1);
+						for (int j = 2; j < count2; j++) {
+							str = str + "<@" + splist2.at(j);
+						}
+						splist3 = str.split("@>");	//第三次按@>分割
+						if (splist3.count() == 1) {		//说明该节点的标尾被破坏
+							nodesContents.append("BROKEN!");
+							continue;
+						}
+						else {
+							str = splist3.at(0);
+							nodesContents.append(str);
+						}						
+					}
+					else {
+						nodesContents.append("BROKEN!");
+						continue;
+					}
+				}
+				else if (count2 == 2) {
+					if (rx.exactMatch(splist2.at(0))) {
+						str = splist2.at(1);
+						splist3 = str.split("@>");
+						nodesContents.append(splist3.at(0));	//不管有几个@>,都以0号元素作为节点内容
+					}
+					else {
+						nodesContents.append("BROKEN!");
+						continue;
+					}
+				}
+				else {
+					nodesContents.append("BROKEN!");
+					continue;
+				}
+			}
+		}
+	}
+	return nodesContents;
+}
 
 
 

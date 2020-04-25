@@ -24,6 +24,8 @@ public:
 	int getRowNumWidth();//ÐÐºÅ¿é¿í
 	void rowNumPlot(QPaintEvent* event);//ÐÐºÅÇø»æ»­
 	QString smartCore(QString key);
+	QStringList getChildNodeContent();
+	QString getParentNodeContent();
 
 protected:
 	void resizeEvent(QResizeEvent* event)override;

@@ -308,10 +308,7 @@ void SmartEdit::rowContentPlot(/*int*/) {
 	setViewportMargins(getRowNumWidth() - 3, -1, -3, 0);
 	curTextCursor = textCursor();
 	/*  节点内容识别函数  */
-	/*if(!getNodeContent().isEmpty())
-		qDebug()<< getNodeContent().at(0);*/
-	//qDebug() << getChildNodeContent();
-	//getParentNodeContent();
+	
 	//当前行高亮
 	if (!isReadOnly()) {
 		QList<QTextEdit::ExtraSelection> extraSelections;
@@ -332,9 +329,9 @@ QString SmartEdit::getParentNodeContent()
 	QStringList childContents = getChildNodeContent();
 	int num = childContents.count();
 	for (int i = 0; i < num; i++) {
-		str.replace("<@" + childContents[i] + "@>", "");
+		str.replace("<@" + childContents[i] + "@>", " ");
 	}
-	//this->setPlainText(str);
+	this->setPlainText(str);	//for test
 	return str;
 }
 
@@ -400,6 +397,87 @@ QStringList SmartEdit::getChildNodeContent()
 	return nodesContents;
 }
 
+/*加载节点内容*/
+void SmartEdit::showContent(Block* block)
+{
+	QString cont = block->content;
+	//QString global;
+	int index = cont.indexOf("#", 0);
+	int n = 0;
+	QRegExp rx("\\d");
+	Block* bl;
+	//QStringList idInContent;
+	while (index != -1)	//每次循环先获取#后面的数字，若其与对应子节点的id相等则将子节点content插入id之后
+	{
+		int i = index;
+		QString id = "";
+		while (rx.exactMatch(cont.at(i))) {	//获取id
+			id += cont.at(i);
+			i++;
+		}
+		//idInContent.append(id);
+		bl = block->childrenBlock->at(n);
+		if (id == bl->id)	//判断是否为子节点id
+		{
+			if (bl->childrenBlock->count != 0) {
+				QString str = bl->content;
+				str.replace("#", "$");
+				cont.insert(i, "<@\n" + str + "\n@>\n");
+			}
+		}
+		n++;
+		index = cont.indexOf("#", index + 1);
+	}
+	this->setPlainText(cont);
+	//return global;
+}
+
+/*加载全局代码*/
+void SmartEdit::showContent(PlotPad* plot)
+{
+	QString cont = "";
+	cont = getContent(plot->root);	//先处理根节点
+	ArrowLine* arr = plot->root->outArrow;
+	Block* block = NULL;
+	while (arr != NULL) {	//处理根节点的后继节点
+		block = arr->toBlock;
+		cont += getContent(block);
+		arr = block->outArrow;
+	}
+	this->setPlainText(cont);
+}
+
+/*全局显示时处理单个节点内容，返回正常代码*/
+QString SmartEdit::getContent(Block* block)
+{
+	QString cont = block->content;
+	int index = cont.indexOf("#", 0);
+	int n = 0;
+	QRegExp rx("\\d");
+	Block* bl;
+	while (index != -1)
+	{
+		int i = index + 1;
+		QString id = "";
+		while (rx.exactMatch(cont.at(i))) {	//获取id
+			id += cont.at(i);
+			i++;
+		}
+		bl = block->childrenBlock->at(n);
+		if (id == bl->id)	//判断是否为子节点id
+		{
+			cont.remove(index, i - 1);
+			cont.insert(index - 1, bl->content);
+		}
+		n++;
+		index = cont.indexOf("#", index + 1);
+	}
+	for (int j = 0; j < block->childrenBlock->count(); j++) {	
+		if (!block->childrenBlock->at(j)->childrenBlock->isEmpty())
+			cont = this->getContent(block->childrenBlock->at(j));	//递归处理子孙节点
+	}
+	return cont;
+}
 
 
 /*

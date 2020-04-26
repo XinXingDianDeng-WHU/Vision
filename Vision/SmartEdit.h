@@ -1,6 +1,7 @@
 #include <QtWidgets>
 #include <QByteArray>
 class PlotPad;
+class Block;
 /*
 高亮器;
 必须写在SmartEdit前
@@ -26,6 +27,9 @@ public:
 	QString smartCore(QString key);
 	QStringList getChildNodeContent();
 	QString getParentNodeContent();
+	void showContent(Block* block);
+	void showContent(PlotPad* plot);
+	QString getContent(Block* block);
 
 protected:
 	void resizeEvent(QResizeEvent* event)override;

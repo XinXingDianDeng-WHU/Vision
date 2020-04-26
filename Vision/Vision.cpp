@@ -173,7 +173,7 @@ void Vision::Undo() {
 }
 /*÷ÿ◊ˆ*/
 void Vision::Redo() {
-	//this->edits->at(0)->getParentNodeContent();
+	this->edits->at(0)->getParentNodeContent();	//for test
 }
 /*ºÙ«–*/
 void Vision::Cut() {

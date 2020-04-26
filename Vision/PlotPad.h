@@ -24,6 +24,7 @@ public:
     Block(int x, int y, QString str);
     //~Block();
     int x, y, w, h;
+    int id;
     QString head;
     QString content;
     ArrowLine* inArrow, * outArrow;

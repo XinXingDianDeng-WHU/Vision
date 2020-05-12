@@ -11,7 +11,6 @@
         <file>Resources/icon/Redo.png</file>
         <file>Resources/icon/Save.png</file>
         <file>Resources/icon/SaveAll.png</file>
-        <file>Resources/icon/SelectAll.png</file>
         <file>Resources/icon/Undo.png</file>
         <file>Resources/icon/SaveAs.png</file>
         <file>Resources/icon/Attritube.png</file>
@@ -21,6 +20,7 @@
         <file>Resources/icon/Default.png</file>
         <file>Resources/icon/Java.png</file>
         <file>Resources/icon/NoPlot.png</file>
+        <file>Resources/icon/BackLevel.png</file>
         <file>Resources/icon/class.png</file>
         <file>Resources/icon/do_while.png</file>
         <file>Resources/icon/enum.png</file>
@@ -32,13 +32,13 @@
         <file>Resources/icon/switch.png</file>
         <file>Resources/icon/try_catch.png</file>
         <file>Resources/icon/union.png</file>
+        <file>Resources/icon/untyped.png</file>
         <file>Resources/icon/while.png</file>
-        <file>Resources/icon/empty.png</file>
         <file>Resources/qss/completer.qss</file>
         <file>Resources/qss/global.qss</file>
         <file>Resources/qss/msgBox.qss</file>
-        <file>Resources/qss/plot.qss</file>
-        <file>Resources/qss/smart.qss</file>
         <file>Resources/qss/tools.qss</file>
+        <file>Resources/qss/edit.qss</file>
+        <file>Resources/qss/pad.qss</file>
     </qresource>
 </RCC>

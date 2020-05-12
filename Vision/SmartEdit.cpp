@@ -169,7 +169,7 @@ SmartEdit::SmartEdit(QTabWidget* parent)
 	, rowNumArea(new RowNumArea(this))
 	, keysCompleter(Q_NULLPTR)
 {
-	//this->setAcceptDrops(false);
+	this->setAcceptDrops(false);
 	setContextMenuPolicy(Qt::NoContextMenu);
 	setFont(QFont("微软雅黑", 12));
 	setWordWrapMode(QTextOption::NoWrap);  //水平自适应滚动条
@@ -181,7 +181,7 @@ SmartEdit::SmartEdit(QTabWidget* parent)
 	keysCompleter->setMaxVisibleItems(8);
 	keysCompleter->popup()->setFont(QFont("微软雅黑", 12, QFont::Bold));
 	//加载qss
-	loadStyleSheet(this, "smart.qss");
+	loadStyleSheet(this, "edit.qss");
 
 	rowContentPlot();//初始化刷新行号块
 	//槽函数
@@ -308,7 +308,7 @@ void SmartEdit::rowContentPlot(/*int*/) {
 	setViewportMargins(getRowNumWidth() - 3, -1, -3, 0);
 	curTextCursor = textCursor();
 	/*  节点内容识别函数  */
-	
+
 	//当前行高亮
 	if (!isReadOnly()) {
 		QList<QTextEdit::ExtraSelection> extraSelections;
@@ -321,7 +321,7 @@ void SmartEdit::rowContentPlot(/*int*/) {
 		setExtraSelections(extraSelections);
 	}
 }
-
+/*  节点内容识别函数  */
 /*返回父节点的内容，其中子节点内容只保留id*/
 QString SmartEdit::getParentNodeContent()
 {
@@ -355,7 +355,7 @@ QStringList SmartEdit::getChildNodeContent()
 					nodesContents.append("BROKEN!");	//只有一个元素说明用户删除了标头<@，节点被破坏
 					continue;
 				}
-				else if(count2 > 2) {	//有多个标头
+				else if (count2 > 2) {	//有多个标头
 					if (rx.exactMatch(splist2.at(0))) {		//只有第0个元素即#和第一个<@之间是数字节点才有可能保持不被破坏
 						str = splist2.at(1);
 						for (int j = 2; j < count2; j++) {
@@ -369,7 +369,7 @@ QStringList SmartEdit::getChildNodeContent()
 						else {
 							str = splist3.at(0);
 							nodesContents.append(str);
-						}						
+						}
 					}
 					else {
 						nodesContents.append("BROKEN!");
@@ -419,7 +419,7 @@ void SmartEdit::showContent(Block* block)
 		bl = block->childrenBlock->at(n);
 		if (id == bl->id)	//判断是否为子节点id
 		{
-			if (bl->childrenBlock->count != 0) {
+			if (bl->childrenBlock->count() != 0) {
 				QString str = bl->content;
 				str.replace("#", "$");
 				cont.insert(i, "<@\n" + str + "\n@>\n");
@@ -436,13 +436,15 @@ void SmartEdit::showContent(Block* block)
 void SmartEdit::showContent(PlotPad* plot)
 {
 	QString cont = "";
-	cont = getContent(plot->root);	//先处理根节点
-	ArrowLine* arr = plot->root->outArrow;
-	Block* block = NULL;
-	while (arr != NULL) {	//处理根节点的后继节点
-		block = arr->toBlock;
-		cont += getContent(block);
-		arr = block->outArrow;
+	if (plot->root) {
+		cont = getContent(plot->root);	//先处理根节点
+		ArrowLine* arr = plot->root->outArrow;
+		Block* block = Q_NULLPTR;
+		while (arr != Q_NULLPTR) {	//处理根节点的后继节点
+			block = arr->toBlock;
+			cont += getContent(block);
+			arr = block->outArrow;
+		}
 	}
 	this->setPlainText(cont);
 }
@@ -472,14 +474,12 @@ QString SmartEdit::getContent(Block* block)
 		n++;
 		index = cont.indexOf("#", index + 1);
 	}
-	for (int j = 0; j < block->childrenBlock->count(); j++) {	
+	for (int j = 0; j < block->childrenBlock->count(); j++) {
 		if (!block->childrenBlock->at(j)->childrenBlock->isEmpty())
 			cont = this->getContent(block->childrenBlock->at(j));	//递归处理子孙节点
 	}
 	return cont;
 }
-
-
 /*
 刷新界面，只和updateRequest关联相比paintEvent大大降低cpu消耗
 */
@@ -714,7 +714,7 @@ QString SmartEdit::smartCore(QString key) {
 			moveIndex++;
 		}
 	}
-	QString retSmart ;
+	QString retSmart = "";
 	if (toolKeys.contains(key)) {
 		retSmart = key;
 		int index = toolKeys.indexOf(key);

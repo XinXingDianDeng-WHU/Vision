@@ -42,11 +42,6 @@ QColor ToolKit::getToolKeyColor(int index) {
 		return QColor(160, 32, 240); break;
 	}
 }
-/*
-void ToolKit::dragLeaveEvent(QDragLeaveEvent* event)
-{
-	qDebug() << "dragLeave";
-}*/
 
 void ToolKit::mousePressEvent(QMouseEvent* event)
 {
@@ -56,12 +51,6 @@ void ToolKit::mousePressEvent(QMouseEvent* event)
 	}
 	QListWidget::mousePressEvent(event);//保留原QListWidget部件的鼠标点击操作.
 }
-
-/*
-void ToolKit::mouseReleaseEvent(QMouseEvent* event)
-{
-	qDebug() << "mouseRelease";
-}*/
 
 void ToolKit::mouseMoveEvent(QMouseEvent* event)
 {
@@ -75,7 +64,6 @@ void ToolKit::mouseMoveEvent(QMouseEvent* event)
 
 				QMimeData* mimeData = new QMimeData();//拖拽产生的临时数据
 				QString mimeText = toolPressed->text();
-				if ("empty" == mimeText)mimeText = "";
 				mimeData->setText(mimeText);//如果文本为空，则代码框默认接收不到任何信息，显示为禁止标志
 				drag->setMimeData(mimeData);
 				auto action = drag->exec(Qt::CopyAction | Qt::MoveAction);

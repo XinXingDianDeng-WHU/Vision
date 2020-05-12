@@ -40,7 +40,7 @@ const QStringList keys_cpp_normal = {
 };
 /*工具框关键字*/
 const QStringList toolKeys = {
-	"empty"/*0, empty block*/
+	"untyped"/*0, empty block*/
 	,"enum","union" ,"struct" ,"class"
 	/*1,-4, blue , class\n{\n\n}, struct\n{\n\n}, space func()\n{\n\n}*/
 	,"if"/*5, if()*/
@@ -67,6 +67,18 @@ const QStringList undefined = {
 	,"Statement"/*1, for if*2, for, while, do*/
 	,"Input"/*2, specail for switch*/
 	,"Type "/*3, special for func*/
+};
+const QStringList blockContent = {
+	""
+	," Name\n{\n\n};"
+	,"if(Statement){\n\n}"
+	,"if(Statement)\n{\n\n}else{\n\n}"
+	,"switch(Input){\ndefault:break;\n}"
+	,"for(Statement;;){\n\n}"
+	,"while(Statement){\n\n}"
+	,"do{\n\n}while();"
+	,"try(){\n\n}catch(){\nthrow\n}"
+	,"Type func(){\n\n}"
 };
 /*加载QSS*/
 void  loadStyleSheet(QWidget* ptr, QString fullFileName);

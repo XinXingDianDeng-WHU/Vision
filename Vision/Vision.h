@@ -1,4 +1,6 @@
 #include <QtWidgets>
+#include <QDomDocument>
+#include <QtXml>
 #include "ui_Vision.h"
 
 namespace Ui {
@@ -8,6 +10,7 @@ class ToolKit;
 class PlotPad;
 class SmartEdit;
 class TipLabel;
+class Block;
 class Vision : public QMainWindow
 {
 	Q_OBJECT
@@ -23,15 +26,18 @@ protected:
 
 private:
 	Ui::VisionClass visionUi;
-	QSplitter* globalSplitter;//左右竖直分割器
+	QSplitter* globalSplitter;
 	ToolKit* toolKit;
-	QTabWidget* plotTab, * editTab;
+	QTabWidget* padTab, * editTab;
 	QTimer* timer;
 	QStringList filePaths;//已打开文件路径
 	QStringList fileNames;//已打开文件
-	QList<PlotPad*>* plots;//plot指针列表
+	QList<PlotPad*>* pads;//plot指针列表
 	QList<SmartEdit*>* edits;//edit指针列表
 
+	bool tabNotEmpty();
+	//处理当前XML节点 写此函数是为了递归
+	void executeElementChilds(QDomElement e, PlotPad* pad, Block* parent, int _level);
 private slots:
 	//大写是为避免和qt自带函数重名
 	void Undo();
@@ -39,7 +45,7 @@ private slots:
 	void Cut();
 	void Copy();
 	void Paste();
-	void SelectAll();
+	void BackLevel();
 	void Delete();
 	void New();
 	void Open();
@@ -57,5 +63,4 @@ private slots:
 	int Quit();
 	void TabSyn_EditFollowPad(int index);
 	void TabSyn_PadFollowEdit(int index); 
-	
 };

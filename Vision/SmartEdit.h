@@ -1,7 +1,7 @@
 #include <QtWidgets>
 #include <QByteArray>
-class PlotPad;
 class Block;
+class PlotPad;
 /*
 高亮器;
 必须写在SmartEdit前
@@ -24,7 +24,7 @@ public:
 
 	int getRowNumWidth();//行号块宽
 	void rowNumPlot(QPaintEvent* event);//行号区绘画
-	QString smartCore(QString key);
+	QString smartCore(QString key); 
 	QStringList getChildNodeContent();
 	QString getParentNodeContent();
 	void showContent(Block* block);

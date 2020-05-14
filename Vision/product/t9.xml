@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pad>
+    <Block type="struct" content="struct Name&#xa;{&#xa;&#xa;};&#xa;" id="0" x="194" blockText="* struct" hasArrowLine="1" y="120">
+        <x>194</x>
+        <y>120</y>
+        <type>struct</type>
+        <blockText>* struct</blockText>
+        <content>struct Name
+{
+
+};
+</content>
+    </Block>
+    <Block type="class" content="class Name&#xa;{&#xa;&#xa;};&#xa;" id="1" x="181" blockText="class" hasArrowLine="0" y="245">
+        <x>181</x>
+        <y>245</y>
+        <type>class</type>
+        <blockText>class</blockText>
+        <content>class Name
+{
+
+};
+</content>
+    </Block>
+</pad>

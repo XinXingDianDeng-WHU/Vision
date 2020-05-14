@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pad>
+    <Block type="if" blockText="* if" y="118" hasArrowLine="1" x="226" content="if(Statement){&#xa;&#xa;}&#xa;" id="0">
+        <x>226</x>
+        <y>118</y>
+        <type>if</type>
+        <blockText>* if</blockText>
+        <content>if(Statement){
+
+}
+</content>
+    </Block>
+    <Block type="switch" blockText="switch" y="339" hasArrowLine="0" x="159" content="switch(Input){&#xa;default:break;&#xa;}&#xa;" id="1">
+        <x>159</x>
+        <y>339</y>
+        <type>switch</type>
+        <blockText>switch</blockText>
+        <content>switch(Input){
+default:break;
+}
+</content>
+    </Block>
+</pad>

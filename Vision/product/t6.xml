@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pad>
+    <Block id="0" type="union" content="union Name&#xa;{&#xa;&#xa;};&#xa;" hasArrowLine="1" blockText="* union" y="155" x="224">
+        <x>224</x>
+        <y>155</y>
+        <type>union</type>
+        <blockText>* union</blockText>
+        <content>union Name
+{
+
+};
+</content>
+    </Block>
+    <Block id="1" type="class" content="class Name&#xa;{&#xa;&#xa;};&#xa;" hasArrowLine="0" blockText="class" y="241" x="206">
+        <x>206</x>
+        <y>241</y>
+        <type>class</type>
+        <blockText>class</blockText>
+        <content>class Name
+{
+
+};
+</content>
+    </Block>
+</pad>

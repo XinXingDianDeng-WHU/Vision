@@ -256,7 +256,7 @@ void Vision::New() {
 	curNodePathLabel->blockPath = newPad->getBlockPath();
 	curNodePathLabel->setElidedText();
 	if (curNodePathLabel->isHidden())curNodePathLabel->show();
-	//以下待补充
+	//用空字符串占位
 	filePaths.append("");
 }
 /*打开文件*/
@@ -315,6 +315,8 @@ void Vision::Open() {
 			if (!doc.setContent(&file))
 			{
 				file.close();
+				filePaths.append(filePath);				
+				statusBar()->showMessage(QString::fromLocal8Bit("打开文件") + filePath, 3000);
 				return;
 			}
 			file.close();
@@ -352,7 +354,7 @@ void Vision::Open() {
 				node = node.nextSibling(); //下一个兄弟节点,nextSiblingElement()是下一个兄弟元素，都差不多
 			}
 			if (1 == newPad->blockStack.count())
-				newEdit->showContent(newPad);
+				newEdit->setPlainText(newEdit->showContent(newPad));
 			else {
 				newEdit->showContent(newPad->blockOnPath->last());
 			}
@@ -362,7 +364,6 @@ void Vision::Open() {
 
 			//将filePath添到已打开文件们中
 			filePaths.append(filePath);
-
 			statusBar()->showMessage(QString::fromLocal8Bit("打开文件") + filePath, 3000);
 		}
 	}
@@ -401,70 +402,163 @@ void Vision::executeElementChilds(QDomElement e, PlotPad* newPad, Block* parent,
 	}
 }
 /*保存文件*/
-void Vision::Save() { //存入txt
+void Vision::Save() { 
 	if (padTab->count() > 0) {
 		//QRegExp rx("&untitled@\S*");	
 		int index = editTab->currentIndex();
 		QString filePath = filePaths.at(index);
-		if (filePath.isEmpty()) {
-			filePath = QFileDialog::getSaveFileName(this,
-				QString::fromLocal8Bit("保存文件"), DEFAULT_PATH, tr("XML (*.xml)"));
-			filePaths[index] = filePath;
-		}
-		QFile file(filePath);
-		if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-			return;
-		QTextStream out(&file);
-		out.setCodec(QTextCodec::codecForName("utf-8"));
-		QString text = edits->at(index)->toPlainText();
-		out << text;
-		file.close();
-		statusBar()->showMessage(QString::fromLocal8Bit("成功保存至") + filePath, 3000);
+		if (fSave(filePath, index) == 1)
+			statusBar()->showMessage(QString::fromLocal8Bit("成功保存至") + filePath, 3000);
 	}
-	//存XML
+	
 }
 /*保存全部*/
 void Vision::SaveAll() {
 	if (padTab->count() > 0) {
 		int fileCounts = filePaths.count();
+		int n = 0;	//用来判断是不是所有文件都保存成功了
 		for (int i = 0; i < fileCounts; i++) {
-			if (filePaths.at(i).isEmpty()) {
-				QString label = editTab->tabText(i);
-				QString filePath = QFileDialog::getSaveFileName(this,
-					QString::fromLocal8Bit("保存") + label, DEFAULT_PATH, tr("XML (*.xml)"));
-				filePaths[i] = filePath;
-			}
-			QFile file(filePaths.at(i));
+			QString filePath = filePaths.at(i);
+			n += fSave(filePath, i);
+		}
+		if (n == fileCounts)
+			statusBar()->showMessage(QString::fromLocal8Bit("全部保存成功"), 3000);
+	}
+}
+/*保存文件具体操作*/
+int Vision::fSave(QString filePath,int index) {
+	if (filePath.isEmpty()) {
+		QString defName = padTab->tabText(index);
+		filePath = QFileDialog::getSaveFileName(this,
+			QString::fromLocal8Bit("保存") + defName, DEFAULT_PATH + tr("/") + defName, "Xml(*.xml);;Txt(*.txt)");
+		if (filePath.isEmpty())
+			return -1;
+		filePaths[index] = filePath;
+	}
+	QFileInfo fileInfo = QFileInfo(filePath);
+	QString fsuffix = fileInfo.suffix();
+	if (fsuffix == "txt") {	//存txt
+		QFile file(filePath);
+		if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+			return -1;
+		QTextStream out(&file);
+		out.setCodec(QTextCodec::codecForName("utf-8"));
+		PlotPad* pad = pads->at(index);
+		QString text = pad->edit->showContent(pad);
+		out << text;
+		file.close();
+	}
+	else if (fsuffix == "xml") {	//存xml
+		pads->at(index)->outport(filePath);
+	}
+	//将路径保存至已有文件路径中
+	filePaths.replace(index, filePath);
+	padTab->setTabText(index, fileInfo.fileName());
+	editTab->setTabText(index, fileInfo.fileName());
+	return 1;
+}
+
+/*导出，另存为*/
+void Vision::SaveAs() {
+	if (tabNotEmpty()) {
+		int index = editTab->currentIndex(); 
+		QString defName = padTab->tabText(index);
+		QString filePath = QFileDialog::getSaveFileName(this,
+			QString::fromLocal8Bit("保存") + defName, DEFAULT_PATH + tr("/") + defName, "Xml(*.xml);;Txt(*.txt)");
+		if (filePath.isEmpty())
+			return;
+		filePaths[index] = filePath;
+		QFileInfo fileInfo = QFileInfo(filePath);
+		QString fsuffix = fileInfo.suffix();
+		if (fsuffix == "txt") {	//存txt
+			QFile file(filePath);
 			if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
 				return;
 			QTextStream out(&file);
 			out.setCodec(QTextCodec::codecForName("utf-8"));
-			out << edits->at(i)->toPlainText();
+			PlotPad* pad = pads->at(index);
+			QString text = pad->edit->showContent(pad);
+			out << text;
 			file.close();
 		}
-		statusBar()->showMessage(QString::fromLocal8Bit("全部保存成功"), 3000);
-	}
-}
-/*导出，另存为*/
-void Vision::SaveAs() {
-	if (tabNotEmpty()) {
-		int index = editTab->currentIndex();
-		pads->at(index)->outport("test.xml");
+		else if (fsuffix == "xml") {	//存xml
+			pads->at(index)->outport(filePath);
+		}
+		//将路径保存至已有文件路径中
+		filePaths.replace(index, filePath);
+		padTab->setTabText(index, fileInfo.fileName());
+		editTab->setTabText(index, fileInfo.fileName());
+		statusBar()->showMessage(QString::fromLocal8Bit("成功保存至") + filePath, 3000);
 	}
 }
 /*关闭文件*/
 void Vision::Close() {
 	if (tabNotEmpty()) {
 		int index = editTab->currentIndex();
-		QString filePath = filePaths.at(index);
-		QFile file(filePath);
-		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return;
-		QTextStream in(&file);
-		in.setCodec(QTextCodec::codecForName("utf-8"));
-		QString all = in.readAll();
-		file.close();
-		QString text = edits->at(index)->toPlainText();
-		if (QString::compare(all, text) != 0) {
+		//QString filePath = filePaths.at(index);		
+
+		//if (!filePath.isEmpty()) {	//路径不为空判断当前pad跟上次保存的xml是否有变化
+		//	QFile file(filePath);
+		//	if (!file.open(QFile::ReadOnly | QIODevice::Text))
+		//		return;			
+		//	QByteArray t;
+		//	while (!file.atEnd())
+		//	{
+		//		t += file.readLine();
+		//	}
+		//	QString str1 = QString(t);
+		//	file.close();
+		//	
+		//	pads->at(index)->outport(".//product/temp.xml");
+		//	
+		//	QFile file2(".//product/temp.xml");
+		//	if (!file2.open(QFile::ReadOnly | QIODevice::Text))
+		//		return;
+		//	QByteArray t2;
+		//	while (!file2.atEnd())
+		//	{
+		//		t2 += file2.readLine();
+		//	}
+		//	QString str2 = QString(t2);
+		//	file2.close();
+		//	if (str1 == str2) {	//无变化 直接关闭
+		//		qDebug() << "000000000.";
+		//	}
+		//	else {	//有变化 弹出选择对话框
+		//		QMessageBox* msgBox = new QMessageBox(
+		//			QMessageBox::Question
+		//			, QString::fromLocal8Bit("关闭")
+		//			, QString::fromLocal8Bit("是否保存当前文件？")
+		//			, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		//		msgBox->button(QMessageBox::Yes)->setText(QString::fromLocal8Bit("保存退出"));
+		//		msgBox->button(QMessageBox::No)->setText(QString::fromLocal8Bit("直接退出"));
+		//		msgBox->button(QMessageBox::Cancel)->setText(QString::fromLocal8Bit("取消"));
+		//		int choose = msgBox->exec();
+		//		if (QMessageBox::Yes == choose)
+		//			Save();
+		//		if (QMessageBox::Cancel == choose)
+		//			return;
+		//	}
+		//}
+		//else {	//路径为空弹出选择对话框
+		//	QMessageBox* msgBox = new QMessageBox(
+		//		QMessageBox::Question
+		//		, QString::fromLocal8Bit("关闭")
+		//		, QString::fromLocal8Bit("是否保存当前文件？")
+		//		, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		//	msgBox->button(QMessageBox::Yes)->setText(QString::fromLocal8Bit("保存退出"));
+		//	msgBox->button(QMessageBox::No)->setText(QString::fromLocal8Bit("直接退出"));
+		//	msgBox->button(QMessageBox::Cancel)->setText(QString::fromLocal8Bit("取消"));
+		//	int choose = msgBox->exec();
+		//	if (QMessageBox::Yes == choose)
+		//		Save();
+		//	if (QMessageBox::Cancel == choose)
+		//		return;
+		//}
+
+
+		/*QString text = edits->at(index)->toPlainText();
+		if (QString::compare("", text) != 0) {
 			QMessageBox* msgBox = new QMessageBox(
 				QMessageBox::Question
 				, QString::fromLocal8Bit("关闭")
@@ -478,10 +572,28 @@ void Vision::Close() {
 				Save();
 			if (QMessageBox::Cancel == choose)
 				return;
-		}
+		}*/
+
+		QMessageBox* msgBox = new QMessageBox(
+			QMessageBox::Question
+			, QString::fromLocal8Bit("关闭")
+			, QString::fromLocal8Bit("是否保存当前文件？")
+			, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		msgBox->button(QMessageBox::Yes)->setText(QString::fromLocal8Bit("保存退出"));
+		msgBox->button(QMessageBox::No)->setText(QString::fromLocal8Bit("直接退出"));
+		msgBox->button(QMessageBox::Cancel)->setText(QString::fromLocal8Bit("取消"));
+		int choose = msgBox->exec();
+		if (QMessageBox::Yes == choose)
+			Save();
+		if (QMessageBox::Cancel == choose)
+			return;
+
+
 		filePaths.removeAt(index);
 		pads->removeAt(index);
 		edits->removeAt(index);
+		padTab->removeTab(index);
+		editTab->removeTab(index);
 		if (!tabNotEmpty()) {
 			visionUi.actionSave->setEnabled(false);
 			visionUi.actionSaveAll->setEnabled(false);
@@ -494,6 +606,7 @@ void Vision::Close() {
 			visionUi.actionBackLevel->setEnabled(false);
 		}
 	}
+	
 }
 /*edit和plot绑定*/
 void Vision::TabSyn_EditFollowPad(int index) {

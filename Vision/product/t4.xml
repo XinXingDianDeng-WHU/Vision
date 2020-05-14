@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pad>
+    <Block blockText="* for" hasArrowLine="1" content="for(Statement;;){&#xa;&#xa;}&#xa;" type="for" id="0" x="243" y="210">
+        <x>243</x>
+        <y>210</y>
+        <type>for</type>
+        <blockText>* for</blockText>
+        <content>for(Statement;;){
+
+}
+</content>
+    </Block>
+    <Block blockText="switch" hasArrowLine="0" content="switch(Input){&#xa;default:break;&#xa;}&#xa;" type="switch" id="1" x="231" y="310">
+        <x>231</x>
+        <y>310</y>
+        <type>switch</type>
+        <blockText>switch</blockText>
+        <content>switch(Input){
+default:break;
+}
+</content>
+    </Block>
+</pad>

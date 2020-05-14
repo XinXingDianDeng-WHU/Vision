@@ -259,7 +259,7 @@ void PlotPad::dropEvent(QDropEvent* event) {
 	recordList->Do(records);
 	UndoRedoCtrl();
 	if (1 == blockStack.count())
-		edit->showContent(this);
+		edit->setPlainText(edit->showContent(this));
 	else {
 		edit->showContent(blockOnPath->last());
 	}
@@ -311,7 +311,7 @@ void PlotPad::mousePressEvent(QMouseEvent* e)
 		}
 		else {
 			if (1 == blockStack.count())
-				edit->showContent(this);
+				edit->setPlainText(edit->showContent(this));
 			else {
 				Block* parentBlock = blockOnPath->last();
 				edit->showContent(parentBlock);
@@ -414,7 +414,7 @@ void PlotPad::backLevel() {
 			pathLabel->setElidedText();
 		}
 		if (1 == blockStack.count())
-			edit->showContent(this);
+			edit->setPlainText(edit->showContent(this));
 		else {
 			Block* parentBlock = blockOnPath->last();
 			edit->showContent(parentBlock);
@@ -432,7 +432,7 @@ void PlotPad::removeItem()
 		removeArrowLine((ArrowLine*)focusedItem);
 	}
 	if (1 == blockStack.count())
-		edit->showContent(this);
+		edit->setPlainText(edit->showContent(this));
 	else {
 		Block* parentBlock = blockOnPath->last();
 		edit->showContent(parentBlock);
@@ -532,7 +532,7 @@ void PlotPad::removeArrowLine(ArrowLine* arrowLine) {
 //		if (focusedItem->className() == "Block") {
 //			Block* focusedBlock = (Block*)focusedItem;
 //			if (focusedBlock->inArrow) {
-//				focusedBlock->inArrow->deleteSelf();
+//				focusedBlock->inArrow->deleteSelf();showContent
 //			}
 //			if (focusedBlock->outArrow) {
 //				focusedBlock->outArrow->deleteSelf();
@@ -692,7 +692,7 @@ void PlotPad::mouseReleaseEvent(QMouseEvent* e)
 					newArrow->setFocus();
 					DeleteCtrl();
 					if (1 == blockStack.count())
-						edit->showContent(this);
+						edit->setPlainText(edit->showContent(this));
 					else 
 						edit->showContent(blockOnPath->last());
 				}

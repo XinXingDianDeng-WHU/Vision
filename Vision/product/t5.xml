@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pad>
+    <Block id="0" hasArrowLine="0" type="class" blockText="* class" y="98" x="234" content="class Name&#xa;{&#xa;&#xa;};&#xa;">
+        <x>234</x>
+        <y>98</y>
+        <type>class</type>
+        <blockText>* class</blockText>
+        <content>class Name
+{
+
+};
+</content>
+    </Block>
+</pad>

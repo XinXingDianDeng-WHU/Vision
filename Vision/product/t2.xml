@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pad>
+    <Block id="0" hasArrowLine="0" blockText="* union" x="271" y="190" type="union" content="union Name&#xa;{&#xa;&#xa;};&#xa;">
+        <x>271</x>
+        <y>190</y>
+        <type>union</type>
+        <blockText>* union</blockText>
+        <content>union Name
+{
+
+};
+</content>
+        <Block id="1" hasArrowLine="0" blockText="* enum" x="200" y="99" type="enum" content="enum Name&#xa;{&#xa;&#xa;};&#xa;">
+            <x>200</x>
+            <y>99</y>
+            <type>enum</type>
+            <blockText>* enum</blockText>
+            <content>enum Name
+{
+
+};
+</content>
+        </Block>
+    </Block>
+</pad>
